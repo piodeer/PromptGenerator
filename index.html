@@ -1406,67 +1406,83 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             return window.innerWidth <= 480 ? 2 : 3;
         }
 
-        // Parse filename to extract title, creator and link
-        // Format: {title}_{creator}_httpsshorturl.at{code}.png
-        // Example: red fox_piodeer_httpsshorturl.atLE5HW.png
-        // Old format: {title}_httpsshorturl.at{code}.png
-        // Example: racoon_httpsshorturl.atTtjbo.png
+        // Parse filename to extract model name, creator and link
+        // Format: {modelname}_{creator}_shorturl{code}.png
+        // Example: red fox_piodeer_shorturlLE5HW.png
+        // Old format: {modelname}_{creator}_httpsshorturl.at{code}.png
+        // Example: racoon_piodeer_httpsshorturl.atTtjbo.png
         function parseImageFilename(filename) {
             // Remove extension
             const nameWithoutExt = filename.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '');
             
-            // Find the pattern: _httpsshorturl.at
-            const pattern = /_httpsshorturl\.at/;
-            const match = nameWithoutExt.match(pattern);
+            let beforeLink = '';
+            let code = '';
+            let link = '';
             
-            if (match) {
-                const index = match.index;
-                const beforeLink = nameWithoutExt.substring(0, index);
-                const code = nameWithoutExt.substring(index + '_httpsshorturl.at'.length);
-                const link = `https://shorturl.at/${code}`;
+            // Try new format first: _shorturl{code}
+            const newPattern = /_shorturl([A-Za-z0-9]+)$/;
+            const newMatch = nameWithoutExt.match(newPattern);
+            
+            if (newMatch) {
+                const index = nameWithoutExt.lastIndexOf('_shorturl');
+                beforeLink = nameWithoutExt.substring(0, index);
+                code = newMatch[1]; // Extract code from match
+                link = `https://shorturl.at/${code}`;
+            } else {
+                // Try old format: _httpsshorturl.at{code}
+                const oldPattern = /_httpsshorturl\.at/;
+                const oldMatch = nameWithoutExt.match(oldPattern);
                 
-                // Split by underscore to get title and creator
-                // Format: {title}_{creator} or {title} (old format)
-                const parts = beforeLink.split('_');
-                
-                let title = '';
-                let creator = '';
-                
-                if (parts.length >= 2) {
-                    // Last part is creator, everything before is title
-                    creator = parts[parts.length - 1];
-                    title = parts.slice(0, -1).join(' ');
+                if (oldMatch) {
+                    const index = oldMatch.index;
+                    beforeLink = nameWithoutExt.substring(0, index);
+                    code = nameWithoutExt.substring(index + '_httpsshorturl.at'.length);
+                    link = `https://shorturl.at/${code}`;
                 } else {
-                    // Old format: no creator found
-                    title = beforeLink;
-                    creator = '';
+                    // Fallback if pattern doesn't match
+                    return {
+                        title: nameWithoutExt,
+                        creator: '',
+                        link: ''
+                    };
                 }
-                
-                // Capitalize first letter of each word in title
-                if (title) {
-                    title = title.split(' ').map(word => 
-                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                    ).join(' ');
-                }
-                
-                return {
-                    title: title || nameWithoutExt,
-                    creator: creator,
-                    link: link
-                };
             }
             
-            // Fallback if pattern doesn't match
+            // Split by underscore to get model name and creator
+            // Format: {modelname}_{creator} or {modelname} (old format)
+            // Note: Model name can contain spaces (e.g. "red fox")
+            const parts = beforeLink.split('_');
+            
+            let modelName = '';
+            let creator = '';
+            
+            if (parts.length >= 2) {
+                // Last part is creator, everything before is model name
+                creator = parts[parts.length - 1];
+                modelName = parts.slice(0, -1).join(' ');
+            } else {
+                // Old format: no creator found
+                modelName = beforeLink;
+                creator = '';
+            }
+            
+            // Capitalize first letter of each word in model name
+            if (modelName) {
+                modelName = modelName.split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ).join(' ');
+            }
+            
             return {
-                title: nameWithoutExt,
-                creator: '',
-                link: ''
+                title: modelName || nameWithoutExt,
+                creator: creator,
+                link: link
             };
         }
 
         // GitHub repository path for images
         const GITHUB_REPO = 'piodeer/PromptGenerator';
-        const GITHUB_BRANCH = '0f7e1d81f77fe92635f961a86b2d13aa2b1a7219';
+        const GITHUB_BRANCH = 'main'; // Change to your default branch (main, master, etc.)
         const GITHUB_FOLDER = 'ressourcen';
         const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_FOLDER}`;
         const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FOLDER}?ref=${GITHUB_BRANCH}`;
@@ -1483,28 +1499,28 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
         // Load all gallery images from GitHub folder
         async function loadGalleryImages() {
             try {
+                console.log('Fetching from GitHub API:', GITHUB_API_URL);
                 const response = await fetch(GITHUB_API_URL);
                 if (!response.ok) {
                     throw new Error(`GitHub API error: ${response.status}`);
                 }
                 
                 const files = await response.json();
+                console.log('GitHub API response:', files);
+                console.log('Number of files:', files.length);
                 
                 // Filter only image files
                 const imageFiles = files
                     .filter(file => file.type === 'file' && isImageFile(file.name))
                     .map((file, index) => {
                         const parsed = parseImageFilename(file.name);
-                        // Use creator as description, fallback to '3D printed model'
-                        const description = parsed.creator && parsed.creator.trim() !== '' 
-                            ? parsed.creator 
-                            : '3D printed model';
+                        console.log('Parsing file:', file.name, 'Result:', parsed); // Debug
                         return {
                             id: index,
                             url: file.download_url || `${GITHUB_RAW_BASE}/${file.name}`,
                             title: parsed.title,
-                            creator: parsed.creator,
-                            description: description,
+                            creator: parsed.creator || '',
+                            description: parsed.creator || '3D printed model',
                             downloadLink: parsed.link
                         };
                     });
@@ -1556,13 +1572,26 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                 const info = document.createElement('div');
                 info.className = 'slide-info';
                 
+                // Model name (title)
                 const title = document.createElement('div');
                 title.className = 'slide-title';
                 title.textContent = image.title;
+                info.appendChild(title);
                 
-                const description = document.createElement('div');
-                description.className = 'slide-description';
-                description.textContent = image.description;
+                // Creator (if available)
+                if (image.creator && image.creator.trim() !== '') {
+                    const creator = document.createElement('div');
+                    creator.className = 'slide-description';
+                    creator.textContent = `Creator: ${image.creator}`;
+                    info.appendChild(creator);
+                } else {
+                    // Show fallback if no creator
+                    const creator = document.createElement('div');
+                    creator.className = 'slide-description';
+                    creator.textContent = '3D printed model';
+                    creator.style.opacity = '0.6';
+                    info.appendChild(creator);
+                }
                 
                 const actions = document.createElement('div');
                 actions.className = 'slide-actions';
@@ -1592,8 +1621,7 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                 
                 actions.appendChild(downloadBtn);
                 
-                info.appendChild(title);
-                info.appendChild(description);
+                // Title is already appended above
                 info.appendChild(actions);
                 
                 slide.appendChild(img);
