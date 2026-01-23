@@ -905,6 +905,45 @@
             height: 20px;
         }
 
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+
+        .confirm-btn-primary {
+            background: linear-gradient(135deg, rgba(100, 181, 246, 0.3), rgba(100, 181, 246, 0.2));
+            border-color: rgba(100, 181, 246, 0.5);
+            color: #ffffff;
+        }
+
+        .confirm-btn-primary:hover {
+            background: linear-gradient(135deg, rgba(100, 181, 246, 0.4), rgba(100, 181, 246, 0.3));
+            border-color: rgba(100, 181, 246, 0.7);
+        }
+
+        .confirm-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .confirm-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
         .slideshow-controls {
             display: flex;
             justify-content: center;
@@ -1099,13 +1138,6 @@
             </div>
         </div>
 
-        <button class="generate-button" onclick="generatePrompt()">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Generate Prompt</span>
-        </button>
-
         <div class="prompt-container">
             <div class="prompt-header">
                 <h2 class="prompt-title">Generated Prompt (copy & paste into ChatGPT)</h2>
@@ -1255,8 +1287,8 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             document.getElementById("output").value = prompt;
         }
 
-        // Copy prompt to clipboard
-        async function copyPrompt() {
+        // Show confirmation modal before copying
+        function showCopyConfirmation() {
             const output = document.getElementById("output");
             const textToCopy = output.value;
             
@@ -1265,6 +1297,57 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                 return;
             }
 
+            // Create confirmation modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.id = 'copyConfirmModal';
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Confirm Copy</h3>
+                        <button class="modal-close" onclick="closeCopyConfirmation()">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
+                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Have you adjusted everything you wanted in the fields above?</p>
+                        <div class="confirm-modal-buttons">
+                            <button class="confirm-btn confirm-btn-secondary" onclick="closeCopyConfirmation()">No, go back</button>
+                            <button class="confirm-btn confirm-btn-primary" onclick="confirmCopy()">Yes, copy prompt</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close on overlay click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeCopyConfirmation();
+                }
+            });
+        }
+
+        // Close confirmation modal (global function for onclick)
+        window.closeCopyConfirmation = function() {
+            const modal = document.getElementById('copyConfirmModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // Confirm and copy prompt (global function for onclick)
+        window.confirmCopy = async function() {
+            window.closeCopyConfirmation();
+            
+            const output = document.getElementById("output");
+            const textToCopy = output.value;
+            
             try {
                 await navigator.clipboard.writeText(textToCopy);
                 
@@ -1288,6 +1371,11 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             }
         }
 
+        // Copy prompt to clipboard (old function, now calls confirmation)
+        function copyPrompt() {
+            showCopyConfirmation();
+        }
+
         // Show notification
         function showNotification(message) {
             // Remove existing notification
@@ -1308,46 +1396,7 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
         }
 
         // Slideshow functionality
-        const exampleImages = [
-            {
-                id: 0,
-                url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&h=300&fit=crop',
-                title: 'Pikachu Chibi',
-                description: 'Classic Pokémon'
-            },
-            {
-                id: 1,
-                url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
-                title: 'Anime Character',
-                description: 'Big eyes style'
-            },
-            {
-                id: 2,
-                url: 'https://images.unsplash.com/photo-1607604274263-4ec007e0e5a0?w=300&h=300&fit=crop',
-                title: 'Fantasy Figure',
-                description: 'Magical details'
-            },
-            {
-                id: 3,
-                url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&h=300&fit=crop',
-                title: 'Kawaii Style',
-                description: 'Pastel colors'
-            },
-            {
-                id: 4,
-                url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
-                title: 'Superhero',
-                description: 'Action pose'
-            },
-            {
-                id: 5,
-                url: 'https://images.unsplash.com/photo-1607604274263-4ec007e0e5a0?w=300&h=300&fit=crop',
-                title: 'Animal Friend',
-                description: 'Cute animal'
-            }
-        ];
-
-        let modelLinks = {};
+        let exampleImages = [];
         let currentPage = 0;
         let imagesPerPage = 3;
         let slideshowInterval;
@@ -1357,16 +1406,118 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             return window.innerWidth <= 480 ? 2 : 3;
         }
 
-        // Load model links from JSON
-        async function loadModelLinks() {
+        // Parse filename to extract title, creator and link
+        // Format: {title}_{creator}_httpsshorturl.at{code}.png
+        // Example: red fox_piodeer_httpsshorturl.atLE5HW.png
+        // Old format: {title}_httpsshorturl.at{code}.png
+        // Example: racoon_httpsshorturl.atTtjbo.png
+        function parseImageFilename(filename) {
+            // Remove extension
+            const nameWithoutExt = filename.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '');
+            
+            // Find the pattern: _httpsshorturl.at
+            const pattern = /_httpsshorturl\.at/;
+            const match = nameWithoutExt.match(pattern);
+            
+            if (match) {
+                const index = match.index;
+                const beforeLink = nameWithoutExt.substring(0, index);
+                const code = nameWithoutExt.substring(index + '_httpsshorturl.at'.length);
+                const link = `https://shorturl.at/${code}`;
+                
+                // Split by underscore to get title and creator
+                // Format: {title}_{creator} or {title} (old format)
+                const parts = beforeLink.split('_');
+                
+                let title = '';
+                let creator = '';
+                
+                if (parts.length >= 2) {
+                    // Last part is creator, everything before is title
+                    creator = parts[parts.length - 1];
+                    title = parts.slice(0, -1).join(' ');
+                } else {
+                    // Old format: no creator found
+                    title = beforeLink;
+                    creator = '';
+                }
+                
+                // Capitalize first letter of each word in title
+                if (title) {
+                    title = title.split(' ').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                    ).join(' ');
+                }
+                
+                return {
+                    title: title || nameWithoutExt,
+                    creator: creator,
+                    link: link
+                };
+            }
+            
+            // Fallback if pattern doesn't match
+            return {
+                title: nameWithoutExt,
+                creator: '',
+                link: ''
+            };
+        }
+
+        // GitHub repository path for images
+        const GITHUB_REPO = 'piodeer/PromptGenerator';
+        const GITHUB_BRANCH = '0f7e1d81f77fe92635f961a86b2d13aa2b1a7219';
+        const GITHUB_FOLDER = 'ressourcen';
+        const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_FOLDER}`;
+        const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FOLDER}?ref=${GITHUB_BRANCH}`;
+
+        // Image file extensions
+        const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+
+        // Check if file is an image
+        function isImageFile(filename) {
+            const lower = filename.toLowerCase();
+            return IMAGE_EXTENSIONS.some(ext => lower.endsWith(ext));
+        }
+
+        // Load all gallery images from GitHub folder
+        async function loadGalleryImages() {
             try {
-                const response = await fetch('model-links.json');
-                const data = await response.json();
-                data.models.forEach(model => {
-                    modelLinks[model.id] = model.downloadLink;
-                });
+                const response = await fetch(GITHUB_API_URL);
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
+                
+                const files = await response.json();
+                
+                // Filter only image files
+                const imageFiles = files
+                    .filter(file => file.type === 'file' && isImageFile(file.name))
+                    .map((file, index) => {
+                        const parsed = parseImageFilename(file.name);
+                        // Use creator as description, fallback to '3D printed model'
+                        const description = parsed.creator && parsed.creator.trim() !== '' 
+                            ? parsed.creator 
+                            : '3D printed model';
+                        return {
+                            id: index,
+                            url: file.download_url || `${GITHUB_RAW_BASE}/${file.name}`,
+                            title: parsed.title,
+                            creator: parsed.creator,
+                            description: description,
+                            downloadLink: parsed.link
+                        };
+                    });
+                
+                exampleImages = imageFiles;
+                
+                if (exampleImages.length === 0) {
+                    console.log('No images found in GitHub folder');
+                }
             } catch (error) {
-                console.log('Model links file not found or error loading it');
+                console.error('Error loading gallery images from GitHub:', error);
+                // Fallback to empty array
+                exampleImages = [];
             }
         }
 
@@ -1375,6 +1526,18 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             const dotsContainer = document.getElementById('slideshowDots');
             const prevButton = document.getElementById('prevButton');
             const nextButton = document.getElementById('nextButton');
+
+            // Clear container
+            container.innerHTML = '';
+
+            // Check if there are any images
+            if (exampleImages.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.style.cssText = 'text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.5);';
+                emptyMessage.textContent = 'No images found. Add images to gallery-images.json';
+                container.appendChild(emptyMessage);
+                return;
+            }
 
             // Create all slides
             exampleImages.forEach((image) => {
@@ -1385,6 +1548,10 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                 img.src = image.url;
                 img.alt = image.title;
                 img.loading = 'lazy';
+                img.onerror = function() {
+                    // If image fails to load, show placeholder
+                    this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300"%3E%3Crect width="300" height="300" fill="%231a1a2e"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23ffffff" font-family="sans-serif" font-size="14"%3EImage not found%3C/text%3E%3C/svg%3E';
+                };
                 
                 const info = document.createElement('div');
                 info.className = 'slide-info';
@@ -1403,13 +1570,13 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'slide-download-btn';
                 downloadBtn.setAttribute('data-model-id', image.id);
-                const downloadLink = modelLinks[image.id];
+                const downloadLink = image.downloadLink;
                 
                 if (downloadLink && downloadLink.trim() !== '') {
                     downloadBtn.onclick = () => window.open(downloadLink, '_blank');
                     downloadBtn.innerHTML = `
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <span>Download</span>
                     `;
@@ -1417,7 +1584,7 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                     downloadBtn.disabled = true;
                     downloadBtn.innerHTML = `
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
                         </svg>
                         <span>Coming Soon</span>
                     `;
@@ -1561,8 +1728,8 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             // Generate initial prompt
             generatePrompt();
 
-            // Load model links and initialize slideshow
-            loadModelLinks().then(() => {
+            // Load gallery images and initialize slideshow
+            loadGalleryImages().then(() => {
                 initSlideshow();
             });
 
@@ -1587,8 +1754,14 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
 
             // Close modal on Escape key
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && submitModal.classList.contains('active')) {
-                    submitModal.classList.remove('active');
+                if (e.key === 'Escape') {
+                    if (submitModal.classList.contains('active')) {
+                        submitModal.classList.remove('active');
+                    }
+                    const copyModal = document.getElementById('copyConfirmModal');
+                    if (copyModal && copyModal.classList.contains('active')) {
+                        window.closeCopyConfirmation();
+                    }
                 }
             });
         }
