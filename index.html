@@ -19,12 +19,23 @@
             color: #ffffff;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             text-align: center;
             padding: 20px;
             position: relative;
             overflow-x: hidden;
+        }
+
+        /* Layout: Hauptinhalt mittig, rechter Panel separat */
+        .page-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 1400px;
+            gap: 0;
+            position: relative;
+            z-index: 1;
         }
 
         @keyframes gradientShift {
@@ -1092,6 +1103,9 @@
             .showcase-container {
                 animation: none;
             }
+            .guide-tab {
+                animation: none;
+            }
             .generate-button:hover,
             .copy-button:hover {
                 transform: none;
@@ -1100,11 +1114,431 @@
                 transition: opacity 0.3s ease;
             }
         }
+
+        /* Right-side tab: step-by-step guide – highly visible */
+        .guide-tab {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            z-index: 100;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 20px 14px;
+            background: linear-gradient(135deg, rgba(100, 181, 246, 0.5), rgba(100, 181, 246, 0.35));
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(100, 181, 246, 0.7);
+            border-right: none;
+            border-radius: 14px 0 0 14px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: -6px 0 28px rgba(0, 0, 0, 0.35), 0 0 40px rgba(100, 181, 246, 0.25);
+            letter-spacing: 0.5px;
+            animation: guideTabPulse 2.5s ease-in-out infinite;
+        }
+        .guide-tab:hover {
+            background: linear-gradient(135deg, rgba(100, 181, 246, 0.6), rgba(100, 181, 246, 0.45));
+            padding-right: 18px;
+            border-color: rgba(100, 181, 246, 0.9);
+            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(100, 181, 246, 0.4);
+        }
+        @keyframes guideTabPulse {
+            0%, 100% { box-shadow: -6px 0 28px rgba(0, 0, 0, 0.35), 0 0 40px rgba(100, 181, 246, 0.25); }
+            50% { box-shadow: -6px 0 28px rgba(0, 0, 0, 0.35), 0 0 55px rgba(100, 181, 246, 0.45); }
+        }
+        .guide-tab.open {
+            right: 420px;
+            border-radius: 14px 0 0 14px;
+            animation: none;
+        }
+        @media (max-width: 900px) {
+            .guide-tab.open {
+                right: 100%;
+                left: 0;
+                margin-left: 0;
+            }
+        }
+
+        .guide-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 420px;
+            max-width: 95vw;
+            height: 100vh;
+            background: rgba(26, 26, 46, 0.97);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+            z-index: 99;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .guide-panel.open {
+            transform: translateX(0);
+        }
+
+        .guide-panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .guide-panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #a0d2ff;
+            margin: 0;
+        }
+        .guide-panel-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .guide-panel-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .guide-panel-body {
+            padding: 24px;
+            text-align: left;
+            flex: 1;
+        }
+        .guide-intro {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 24px;
+        }
+        .guide-step {
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .guide-step:last-child {
+            border-bottom: none;
+        }
+        .guide-step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(100, 181, 246, 0.35);
+            border: 1px solid rgba(100, 181, 246, 0.5);
+            color: #a0d2ff;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .guide-step-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .guide-step-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 12px;
+        }
+        .guide-step-img {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(26, 26, 46, 0.6);
+            aspect-ratio: 16/10;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .guide-step-img:hover {
+            border-color: rgba(100, 181, 246, 0.5);
+            box-shadow: 0 4px 20px rgba(100, 181, 246, 0.2);
+        }
+        /* Lightbox: step image enlarged */
+        .guide-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            padding: 20px;
+        }
+        .guide-lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .guide-lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .guide-lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .guide-lightbox-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            max-width: 80%;
+            z-index: 1;
+        }
+        .guide-lightbox-img-wrap {
+            max-width: 95vw;
+            max-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .guide-lightbox-img-wrap img {
+            max-width: 100%;
+            max-height: 85vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 10px 16px;
+            background: rgba(100, 181, 246, 0.25);
+            border: 1px solid rgba(100, 181, 246, 0.5);
+            border-radius: 8px;
+            color: #a0d2ff;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .guide-link:hover {
+            background: rgba(100, 181, 246, 0.35);
+            border-color: rgba(100, 181, 246, 0.7);
+        }
+        .guide-downloads {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0 8px 0;
+        }
+        .guide-download-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .guide-download-btn {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(100, 181, 246, 0.25);
+            border: 1px solid rgba(100, 181, 246, 0.5);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .guide-download-btn:hover {
+            background: rgba(100, 181, 246, 0.4);
+            border-color: rgba(100, 181, 246, 0.7);
+        }
+        .guide-info-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .guide-info-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .guide-info-tooltip {
+            position: absolute;
+            max-width: 240px;
+            padding: 10px 12px;
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.4;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 10002;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .guide-info-tooltip.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
     <div class="particles" id="particles"></div>
 
+    <button type="button" class="guide-tab" id="guideTab" aria-label="Open step-by-step guide">📖 Step-by-step guide: Image → 3D</button>
+
+    <aside class="guide-panel" id="guidePanel" aria-label="Makerworld guide">
+        <div class="guide-panel-header">
+            <h2 class="guide-panel-title">Image to 3D with Makerworld (MakerLab)</h2>
+            <button type="button" class="guide-panel-close" id="guidePanelClose" aria-label="Close guide">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="guide-panel-body">
+            <p class="guide-intro">
+                With Makerworld’s <strong>Image to 3D</strong> tool (Bambu Lab MakerLab) you can turn a single image into a 3D model – ideal for Chibi figures from this prompt generator. Steps:
+            </p>
+
+            <div class="guide-step">
+                <div class="guide-step-num">1</div>
+                <div class="guide-step-title">Open Makerworld</div>
+                <p class="guide-step-text">Go to <strong>makerworld.com</strong> and sign in. In the top navigation, open <strong>MakerLab</strong>.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt1.jpg" alt="Open Makerworld MakerLab" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">2</div>
+                <div class="guide-step-title">Choose “Image to 3D”</div>
+                <p class="guide-step-text">In MakerLab, select the <strong>“Image to 3D”</strong> tool. It creates a 3D model from a single image using AI.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt2.jpg" alt="Image to 3D tool" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">3</div>
+                <div class="guide-step-title">Upload your image</div>
+                <p class="guide-step-text">Upload your image – e.g. one generated with the Chibi prompt (e.g. from ChatGPT/DALL·E). Clear images with good contrast and a simple background (e.g. white) work best.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt3.jpg" alt="Upload image" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">4</div>
+                <div class="guide-step-title">Generate 3D model</div>
+                <p class="guide-step-text">Start generation. The AI builds a 3D model from the image; it may take a moment. Note: Makerworld uses a credit system – extra credits may be needed for more conversions.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt4.jpg" alt="Generate 3D model" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">5</div>
+                <div class="guide-step-title">Review and adjust model</div>
+                <p class="guide-step-text">Check the result in the viewer. You can often adjust colors and simplify color layers (e.g. for single-material printing without AMS). Post-process in Blender or other software if needed.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt5.jpg" alt="Review model" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">6</div>
+                <div class="guide-step-title">Export and print</div>
+                <p class="guide-step-text">Export the model as <strong>3MF</strong>, <strong>STL</strong>, or <strong>GLB</strong>. Import into <strong>Bambu Studio</strong>, slice, and print. Optionally reduce STL size in the slicer if you want to use it in Tinkercad or similar.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt6.jpg" alt="Export and print" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">7</div>
+                <div class="guide-step-title">Negative parts in Bambu Studio</div>
+                <p class="guide-step-text">Select the <strong>object that should contain the cut-out</strong> (the main part). Right-click it and choose <strong>Add negative part</strong>. In that dialog you can <strong>scale and position</strong> the negative part, then confirm. The negative is subtracted from the selected object.</p>
+                <div class="guide-downloads">
+                    <div class="guide-download-row">
+                        <a class="guide-download-btn" href="https://piodeer.vercel.app/index.html?file=keychaintool.stl" target="_blank" rel="noopener">Download keychain tool</a>
+                        <button class="guide-info-btn" type="button" data-info="Download this as a negative part to match the results shown in the videos." aria-label="Keychain tool info">i</button>
+                    </div>
+                    <div class="guide-download-row">
+                        <a class="guide-download-btn" href="https://piodeer.vercel.app/index.html?file=flexicutter.stl" target="_blank" rel="noopener">Download flexi cutter</a>
+                        <button class="guide-info-btn" type="button" data-info="Download this as a negative part to match the results shown in the videos." aria-label="flexi cutter info">i</button>
+                    </div>
+                </div>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt7.jpg" alt="Negative parts in Bambu Studio" loading="lazy">
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-num">8</div>
+                <div class="guide-step-title">Add a pause in the slicer</div>
+                <p class="guide-step-text"><strong>Slice the print</strong> first. Then move the <strong>slider</strong> to the desired height (layer). Right-click at that position on the slider and choose <strong>Add pause</strong>. The printer will stop at that height until you resume.</p>
+                <img class="guide-step-img" src="https://raw.githubusercontent.com/piodeer/PromptGenerator/main/ressourcen/Schritt8.jpg" alt="Pause in slicer" loading="lazy">
+            </div>
+
+            <a href="https://makerworld.com" target="_blank" rel="noopener" class="guide-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                </svg>
+                Open Makerworld
+            </a>
+        </div>
+    </aside>
+
+    <div class="guide-lightbox" id="guideLightbox" aria-hidden="true">
+        <button type="button" class="guide-lightbox-close" id="guideLightboxClose" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
+                <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <div class="guide-lightbox-title" id="guideLightboxTitle"></div>
+        <div class="guide-lightbox-img-wrap">
+            <img id="guideLightboxImg" src="" alt="">
+        </div>
+    </div>
+    <div class="guide-info-tooltip" id="guideInfoTooltip" role="tooltip"></div>
+
+    <div class="page-wrapper">
     <div class="container">
         <div class="avatar">
             <img src="https://raw.githubusercontent.com/piodeer/LinkTree/392c8bf5eb91d04289f23203c18cde1a75bd345f/media/logo.png" alt="piodeer logo">
@@ -1233,6 +1667,7 @@
             </div>
         </div>
     </div>
+    </div><!-- .page-wrapper -->
 
     <script>
         // Floating Particles Animation
@@ -1496,6 +1931,12 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
             return IMAGE_EXTENSIONS.some(ext => lower.endsWith(ext));
         }
 
+        // Exclude guide step images from gallery
+        function isStepImage(filename) {
+            const lower = filename.toLowerCase().replace(/\.[^.]+$/, '');
+            return /^schritt[1-8]$/.test(lower);
+        }
+
         // Load all gallery images from GitHub folder
         async function loadGalleryImages() {
             try {
@@ -1511,7 +1952,7 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                 
                 // Filter only image files
                 const imageFiles = files
-                    .filter(file => file.type === 'file' && isImageFile(file.name))
+                    .filter(file => file.type === 'file' && isImageFile(file.name) && !isStepImage(file.name))
                     .map((file, index) => {
                         const parsed = parseImageFilename(file.name);
                         console.log('Parsing file:', file.name, 'Result:', parsed); // Debug
@@ -1790,6 +2231,80 @@ optimized for AI-to-3D reconstruction and 3D printing.`;
                     if (copyModal && copyModal.classList.contains('active')) {
                         window.closeCopyConfirmation();
                     }
+                    const guidePanel = document.getElementById('guidePanel');
+                    if (guidePanel && guidePanel.classList.contains('open')) {
+                        guidePanel.classList.remove('open');
+                        document.getElementById('guideTab').classList.remove('open');
+                    }
+                }
+            });
+
+            // Toggle guide panel (right side)
+            const guideTab = document.getElementById('guideTab');
+            const guidePanel = document.getElementById('guidePanel');
+            const guidePanelClose = document.getElementById('guidePanelClose');
+            if (guideTab && guidePanel) {
+                guideTab.addEventListener('click', () => {
+                    guidePanel.classList.toggle('open');
+                    guideTab.classList.toggle('open');
+                });
+                if (guidePanelClose) {
+                    guidePanelClose.addEventListener('click', () => {
+                        guidePanel.classList.remove('open');
+                        guideTab.classList.remove('open');
+                    });
+                }
+            }
+
+            // Step images: click opens lightbox
+            const guideLightbox = document.getElementById('guideLightbox');
+            const guideLightboxImg = document.getElementById('guideLightboxImg');
+            const guideLightboxTitle = document.getElementById('guideLightboxTitle');
+            const guideLightboxClose = document.getElementById('guideLightboxClose');
+            document.querySelectorAll('.guide-step-img').forEach((img) => {
+                img.addEventListener('click', () => {
+                    const step = img.closest('.guide-step');
+                    const titleEl = step ? step.querySelector('.guide-step-title') : null;
+                    guideLightboxImg.src = img.src;
+                    guideLightboxImg.alt = img.alt;
+                    guideLightboxTitle.textContent = titleEl ? titleEl.textContent : img.alt;
+                    guideLightbox.classList.add('active');
+                    guideLightbox.setAttribute('aria-hidden', 'false');
+                });
+            });
+            function closeGuideLightbox() {
+                guideLightbox.classList.remove('active');
+                guideLightbox.setAttribute('aria-hidden', 'true');
+            }
+            if (guideLightboxClose) guideLightboxClose.addEventListener('click', closeGuideLightbox);
+            guideLightbox.addEventListener('click', (e) => {
+                if (e.target === guideLightbox) closeGuideLightbox();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && guideLightbox.classList.contains('active')) {
+                    closeGuideLightbox();
+                }
+            });
+
+            // Info buttons: show tooltip for negative-part downloads
+            const guideInfoTooltip = document.getElementById('guideInfoTooltip');
+            document.querySelectorAll('.guide-info-btn').forEach((btn) => {
+                btn.addEventListener('click', (e) => {
+                    const info = btn.getAttribute('data-info');
+                    if (!info) return;
+                    guideInfoTooltip.textContent = info;
+                    guideInfoTooltip.classList.add('active');
+                    const rect = btn.getBoundingClientRect();
+                    const tooltipWidth = 240;
+                    const left = Math.min(window.innerWidth - tooltipWidth - 16, Math.max(16, rect.left - 80));
+                    const top = rect.top - 12;
+                    guideInfoTooltip.style.left = `${left}px`;
+                    guideInfoTooltip.style.top = `${top}px`;
+                });
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.guide-info-btn')) {
+                    guideInfoTooltip.classList.remove('active');
                 }
             });
         }
